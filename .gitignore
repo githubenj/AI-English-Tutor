@@ -1,0 +1,8 @@
+.env
+__pycache__/
+*.pyc
+venv/
+lapulka_response.*
+my_voice.wav
+*.log
+.idea

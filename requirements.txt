@@ -1,0 +1,10 @@
+openai
+pygame
+speechrecognition
+whisper
+pydub
+simpleaudio
+sounddevice
+TTS
+numpy
+python-dotenv
