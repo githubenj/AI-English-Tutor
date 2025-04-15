@@ -39,6 +39,15 @@ load_dotenv()
 api_key = os.getenv("OPENAI_API_KEY")
 client = OpenAI(api_key=api_key)
 
+# ===== Выбор модели =====
+print("\nВыбери модель GPT:")
+print("[1] 💬 gpt-3.5-turbo (быстрее, дешевле)")
+print("[2] 🧠 gpt-4o (умнее, дороже)")
+
+model_choice = input("Твой выбор (1/2): ").strip()
+selected_model = "gpt-4o" if model_choice == "2" else "gpt-3.5-turbo"
+print(f"✅ Используется модель: {selected_model}")
+
 # ===== Whisper =====
 print("🧠 Загружаем Whisper модель на GPU...")
 whisper_model = whisper.load_model("base", device="cuda")
@@ -180,7 +189,7 @@ while True:
             # 💬 Ответ GPT
             def gpt_reply(text):
                 response = client.chat.completions.create(
-                    model="gpt-3.5-turbo",
+                    model=selected_model,
                     messages=[{"role": "user", "content": text}],
                     max_tokens=200,
                     temperature=0.8
@@ -237,7 +246,7 @@ while True:
         prompt = f"You are an empathetic English tutor. Analyze this spoken sentence and give kind and constructive feedback on pronunciation, grammar or word choice:\n\n{text}"
 
         response = client.chat.completions.create(
-            model="gpt-3.5-turbo",
+            model=selected_model,
             messages=[
                 {"role": "system", "content": "You are a helpful English tutor with British politeness and supportive tone."},
                 {"role": "user", "content": prompt}
