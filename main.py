@@ -79,8 +79,9 @@ while True:
     print("[1] ⏱ 10 секунд")
     print("[2] ⏱ 60 секунд")
     print("[3] 🖐 Ручной режим с паузой и пробелом")
+    print("[4] 🗣️ Режим диалога с ассистентом (разговор с Лапулькой)")
 
-    choice = input("Твой выбор (1/2/3): ").strip()
+    choice = input("Твой выбор (1/2/3/4): ").strip()
 
     # ===== Вариант 1 и 2: фиксированная длительность =====
     if choice in ["1", "2"]:
@@ -157,6 +158,47 @@ while True:
         print(f"✅ Запись сохранена как {filename}")
 
         keyboard.unhook_all()
+    elif choice == "4":
+        print("\n🎧 Включён режим диалога. Скажи что-нибудь, я тебя слушаю!")
+
+        while True:
+            # 🎤 Запись
+            recording = sd.rec(int(6 * fs), samplerate=fs, channels=1, dtype='int16')
+            sd.wait()
+            scipy.io.wavfile.write(filename, fs, recording)
+
+            # 🔍 Распознавание
+            result = whisper_model.transcribe(filename)
+            recognized = result["text"].strip()
+            if not recognized:
+                print("😶 Ничего не распознано. Скажи ещё раз...")
+                continue
+
+            print("📄 Ты сказал:", recognized)
+
+
+            # 💬 Ответ GPT
+            def gpt_reply(text):
+                response = client.chat.completions.create(
+                    model="gpt-3.5-turbo",
+                    messages=[{"role": "user", "content": text}],
+                    max_tokens=200,
+                    temperature=0.8
+                )
+                return response.choices[0].message.content.strip()
+
+
+            reply = gpt_reply(recognized)
+            print("🤖 Лапулька:", reply)
+
+            # 🔊 Озвучка
+            speak_nova(reply)
+
+            # 🛑 Выход по команде
+            if any(word in recognized.lower() for word in ["exit", "quit", "выйти", "стоп"]):
+                speak_nova("Okay, see you next time!")
+                break
+
 
     else:
         print("❌ Неверный ввод. Попробуй снова.")
