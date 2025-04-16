@@ -147,13 +147,14 @@ Structure your response like:
 
 
 while True:
-    print("\nВыбери режим записи:")
-    print("[1] ⏱ 10 секунд couch")
+    print("\nВыбери режим:")
+    print("[1] ⏱ 10 секунд coach")
     print("[2] 💬 Текстовый ввод")
     print("[3] 🗣️ Режим Лапульки-ассистента (выполнение команд и объяснений)")
     print("[4] 🤖 Тренер по произношению (анализ и фидбэк от Лапульки)")
+    print("[5] 📚 Dictionary Mode (learn word or idiom deeply)")
 
-    choice = input("Твой выбор (1/2/3/4): ").strip()
+    choice = input("Твой выбор (1/2/3/4/5): ").strip()
 
     # ===== Вариант 1 и 2: фиксированная длительность =====
     if choice == "1":
@@ -485,6 +486,84 @@ Student's sentence:
                 speak_nova("Okay, see you next time!")
                 break
 
+    elif choice == "5":
+        while True:
+            print("\n📚 Dictionary Mode activated! Enter a word or idiom you'd like to learn.")
+            user_word = input("🔤 Enter a word or phrase: ").strip()
+
+            if not user_word:
+                print("❌ No input received. Returning to main menu.")
+                continue
+
+            # Озвучка слова
+            speak_nova(user_word)
+
+            # 🎀 Украшаем слово эмоджи (для текста)
+            emoji_choices = ["💗", "💫", "🌟", "💕", "🌸", "🎀", "🩷", "✨", "🍬", "🫶", "🧁", "🦋", "🌈", "💖", "🌼", "🌺", "🥰", "🍭", "🐣", "💝"]
+            random_emoji = random.choice(emoji_choices)
+            decorated_word = f"{random_emoji}{user_word}{random_emoji}"
+
+            # GPT-запрос
+            def gpt_dictionary_explanation(word):
+                prompt = f"""
+Please provide a detailed English dictionary-style explanation for the following word or phrase: "{decorated_word}"
+
+Provide a detailed and structured explanation as follows:
+
+Include:
+1. British and American pronunciation in IPA.
+2. Part of speech and if it's formal/informal.
+3. Meaning(s) in clear English.
+4. Notes like: transitive/intransitive (for verbs), countable/uncountable (for nouns). Comparative/Superlative (if adjective):  
+- Comparative: [e.g. friendlier / more friendly]  
+- Superlative: [e.g. friendliest / most friendly] 
+5. Typical prepositions or collocations.
+6. Synonyms or similar expressions.
+7. 2–3 real-life usage examples.
+8. Usage tips, frequency, common mistakes, cultural context, etc.
+"""
+                response = client.chat.completions.create(
+                    model=selected_model,
+                    messages=[
+                        {"role": "system", "content": "You are a friendly dictionary expert and English tutor."},
+                        {"role": "user", "content": prompt}
+                    ],
+                    max_tokens=600,
+                    temperature=0.7
+                )
+                return response.choices[0].message.content.strip()
+
+            # 🔎 Получаем результат
+            result = gpt_dictionary_explanation(user_word)
+            print(f"\n📘 Dictionary Entry for {decorated_word}:\n")
+            print(result)
+
+            # 🎤 Озвучиваем только слово
+            speak_nova(user_word)
+
+            # 💡 Повторная опция после показа информации
+            while True:
+                print("\nWhat would you like to do next?")
+                print("[1] 🔁 Repeat the pronunciation")
+                print("[2] 📚 Enter another word or phrase")
+                print("[3] ❌ Return to main menu")
+
+                followup = input("Your choice (1/2/3): ").strip()
+
+                if followup == "1":
+                    speak_nova(user_word)  # Повторяем произношение
+                elif followup == "2":
+                    break  # Выйдем из while, начнётся снова режим 5
+                elif followup == "3":
+                    print("👋 Returning to main menu!")
+                    continue_outer_loop = True
+                    break
+                else:
+                    print("🌀 Hmm, that option doesn’t exist. Try again?")
+
+            if 'break_outer' in locals() and break_outer:
+                del break_outer
+                break  # Полный выход из режима 5
 
 
     else:
