@@ -514,13 +514,13 @@ Include:
 1. British and American pronunciation in IPA.
 2. Part of speech and if it's formal/informal.
 3. Meaning(s) in clear English.
-4. Notes like: transitive/intransitive (for verbs), countable/uncountable (for nouns). Comparative/Superlative (if adjective):  
+4. Notes like: transitive/intransitive (for verbs), countable/uncountable (for nouns). Comparative and Superlative (if adjective):  
 - Comparative: [e.g. friendlier / more friendly]  
 - Superlative: [e.g. friendliest / most friendly] 
 5. Typical prepositions or collocations.
 6. Synonyms or similar expressions.
 7. 2–3 real-life usage examples.
-8. Usage tips, frequency, common mistakes, cultural context, etc.
+8. Usage tips specific to this word: mention how this word is used (formal/informal), its frequency of use. Russian translation of this word. Include common mistakes people make with using this word. Keep this section brief and precise. Avoid long explanations.
 """
                 response = client.chat.completions.create(
                     model=selected_model,
