@@ -9,3 +9,5 @@ sounddevice
 TTS
 numpy
 python-dotenv
+keyboard==0.13.5
+requests==2.25.1
