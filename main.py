@@ -2,6 +2,7 @@ import sounddevice as sd
 import scipy.io.wavfile
 import whisper
 import random
+emoji_choices = ["💗", "💫", "🌟", "💕", "🌸", "🎀", "🩷", "✨", "🍬", "🫶", "🧁", "🦋", "🌈", "💖", "🌼", "🌺", "🥰", "🍭", "🐣", "💝"]
 import os
 import subprocess
 import sys
@@ -96,36 +97,40 @@ echo_repeat = False
 def gpt_feedback(text, mode="default"):
     if mode == "text_input":
         prompt = f"""
-You are a kind and professional English teacher. The student has submitted a written response. Your feedback should be brief and to the point.
+You are an English tutor and assistant. Please respond based on the following:
 
-Please do the following:
-- Provide kind and constructive feedback on grammar, vocabulary, word choice and structure.
-- Explain your choice.
-- Suggest improvements, if any.
-- If there are any mistakes, show all them in **"before → after"** format.
-- Write the text with the corrected mistakes.
-- Be kind and encouraging, like a supportive English tutor.
+1. If the student is asking for help with grammar, spelling, or structure, provide feedback on what can be improved, explain why, and give the corrected sentence.
+2. If the student asks for something creative like a story, respond with a short, relevant story that fits their request. Be creative and include appropriate grammar and vocabulary.
+3. If the student asks to check their homework or assignment, evaluate the work, give feedback on mistakes, and provide suggestions for improvement.
+4. If the student asks about the usage of a word or phrase, explain whether it is correct and why it is used this way or not.
 
-Student's text:        
+Please ensure your responses are clear, professional, and polite. Make sure to adapt to the student's request.
+
+Student's text:   
 {text}
 """
         response = client.chat.completions.create(
             model=selected_model,
             messages=[
-                {"role": "system", "content": "You are an encouraging English tutor with deep expertise."},
+                {"role": "system", "content": "You are a professional English tutor and assistant."},
                 {"role": "user", "content": prompt}
             ],
-            max_tokens=170,
+            max_tokens=300,
             temperature=0.7
         )
         return response.choices[0].message.content.strip()
+
     else:
         prompt = f"""
 You are a professional English pronunciation and speaking coach. When the student says something, analyze it and give structured, supportive feedback with the following structure:
 
-1. Provide encouraging and constructive feedback
-2. Emphasize natural spoken English rhythm and tone.
-3. Repeat the sentence with corrected pronunciation, grammar, word choice and intonation after that.
+Your feedback should:
+1. Gently encourage the student
+2. Identify concrete errors in grammar, vocabulary, or pronunciation
+3. Explain why they are incorrect in simple terms
+4. Provide a corrected sentence with natural spoken English rhythm
+
+Avoid vague praise like "great job" — focus on useful, kind guidance.
 
 Structure your response like:
 💬 Feedback: [Your kind feedback here about pronunciation, word choice, grammar and clarity.]
@@ -147,40 +152,93 @@ Structure your response like:
 
 
 while True:
-    print("\nВыбери режим:")
-    print("[1] ⏱ 10 секунд coach")
-    print("[2] 💬 Текстовый ввод")
-    print("[3] 🗣️ Режим Лапульки-ассистента (выполнение команд и объяснений)")
-    print("[4] 🤖 Тренер по произношению (анализ и фидбэк от Лапульки)")
-    print("[5] 📚 Dictionary Mode (learn word or idiom deeply)")
+    print("\nChoose a mode:")
+    print("[1] ⏱ 10-second Pronunciation coach mode")
+    print("[2] 💬 Chat with English Tutor (written questions & exercises)")
+    print("[3] 🗣️ Lapulka Assistant Mode (commands & explanations)")
+    print("[4] 🤖 Pronunciation Coach (feedback from Lapulka)")
+    print("[5] 📚 Dictionary Mode (learn a word or idiom in depth)")
 
     choice = input("Твой выбор (1/2/3/4/5): ").strip()
 
-    # ===== Вариант 1 и 2: фиксированная длительность =====
+    # ===== Вариант 1: 10-second Pronunciation coach mode =====
     if choice == "1":
-        seconds = 10
+        while True:
+            seconds = 10
 
 
-        def countdown(seconds):
-            for i in range(seconds, 0, -1):
-                print(" " * 50, end="\r")  # Очистка строки
-                print(f"⏱ Осталось: {i} сек", end="\r")
-                time.sleep(1)
-            print(" " * 50, end="\r")
+            def countdown(seconds):
+                for i in range(seconds, 0, -1):
+                    print(" " * 50, end="\r")  # Очистка строки
+                    print(f"⏱ Осталось: {i} сек", end="\r")
+                    time.sleep(1)
+                print(" " * 50, end="\r")
 
 
-        print(f"\n🎙️ Говори после сигнала ({seconds} секунд)...")
-        winsound.Beep(1000, 300)
+            print("🎙️ Quick pronunciation coach mode: You have 10 seconds to speak.")
+            print("🧠 Lapulka will listen, give sweet feedback, and repeat your sentence!")
+            print("👉 Press [Enter] to start recording")
+            print("🔔 Speak after the beep!")
+            input()
+            winsound.Beep(1000, 300)
+            emoji = random.choice(emoji_choices)
+            print(f"🎙️ Speak now, darling! I'm all ears and ready to listen~ {emoji}")
 
-        timer_thread = threading.Thread(target=countdown, args=(seconds,))
-        timer_thread.start()
+            timer_thread = threading.Thread(target=countdown, args=(seconds,))
+            timer_thread.start()
 
-        recording = sd.rec(int(seconds * fs), samplerate=fs, channels=1, dtype='int16')
-        sd.wait()
-        timer_thread.join()
+            recording = sd.rec(int(seconds * fs), samplerate=fs, channels=1, dtype='int16')
+            sd.wait()
+            timer_thread.join()
 
-        scipy.io.wavfile.write(filename, fs, recording)
-        print(f"✅ Запись сохранена как {filename}")
+            scipy.io.wavfile.write(filename, fs, recording)
+            # 🔍 Распознавание
+            result = whisper_model.transcribe(filename, language="en")
+            recognized = result["text"].strip()
+
+            def convert_digits_to_words(text):
+                return re.sub(r'\b\d+\b', lambda x: num2words(int(x.group())), text)
+
+            # 💭 Если ничего не услышано — выбери милую фразочку и повтори
+            if not recognized:
+                not_recognized_phrases = [
+                    "Oops, I didn’t catch that. Could you please say it again?",
+                    "Hmm, I couldn’t quite hear that. Try one more time?",
+                    "I missed that one, love. Let’s try again 💫",
+                    "Say that again for me, sweetie 💗",
+                    "Can you repeat that a little louder? I’m all ears! 🐰",
+                    "Could you speak up a little bit? I really want to hear you clearly 🎀",
+                    "Let’s try that again together, darling ✨",
+                    "Oh no, I missed that. Want to give it another try? 💕",
+                    "That one slipped past me! Say it one more time, please 🌈",
+                    "Just one more time, cutie 🌟 I’m listening with all my heart 💞",
+                    "It sounded soft like a whisper... mind saying it again? 🎧",
+                    "Hmm, I blinked for a second 😳 Could you repeat that?",
+                    "You sounded adorable, but I need to hear you again 💖"
+                ]
+                message = random.choice(not_recognized_phrases)
+                print("😶", message)
+                speak_nova(message)
+                continue
+
+
+            recognized_words = convert_digits_to_words(recognized)
+            print("📄 You said:", recognized_words)
+
+            comment = gpt_feedback(recognized_words)
+            print("💬 Комментарий Лапушки (GPT):", comment)
+            threading.Thread(target=speak_nova, args=(comment,), daemon=True).start()
+
+            print("\nWhat would you like to do next?")
+            print("[1] 🗣️ Try again (10-second recording)")
+            print("[2] 🔙 Return to main menu")
+
+            next_action = input("Your choice (1/2): ").strip()
+            if next_action == "2":
+                break
+            else:
+                continue
+
 
     # ===== Вариант 2: текст =====
     elif choice == "2":
@@ -199,17 +257,16 @@ while True:
                 lines.append(line)
 
         recognized_words = "\n".join(lines).strip()
-        print("📄 You wrote:", recognized_words)
 
         # GPT-анализ — используем старый стиль для текстового режима
         comment = gpt_feedback(recognized_words, mode="text_input")
         print("💬 Комментарий Лапушки (GPT):", comment)
-        speak_nova(comment)
+        # speak_nova(comment) пока отключила
 
         # 🔁 Повтор или выход
-        print("\nЧто дальше?")
-        print("[1] 🔁 Ввести снова")
-        print("[2] ❌ Выйти")
+        print("\nWhat would you like to do next?")
+        print("[1] 🔁 Let's chat again")
+        print("[2] 🔙 Return to main menu")
 
         next_action = input("Твой выбор (1/2): ").strip()
         if next_action != "1":
@@ -218,7 +275,7 @@ while True:
         else:
             continue
 
-    # ===== Вариант 3: Режим ассистента =====
+    # ===== Вариант 3: Lapulka Assistant Mode (commands & explanations) =====
     elif choice == "3":
         def gpt_pronunciation_greeting():
             prompt = "Say a kind and cheerful greeting as an English tutor-assistant who is happy to help the student. Keep it under 15 words and cheerful."
@@ -254,9 +311,13 @@ while True:
             keyboard.on_press_key("space", stop_recording)
 
             print("\n🎙️ Assistant mode is active:")
-            print("   ▶️ Нажимай [P], чтобы поставить/снять паузу")
-            print("   ⏹ Нажми [пробел], чтобы завершить запись")
+            print("   👉 Press [Enter] to start recording")
+            print("   ▶️ Press [P] to pause/resume")
+            print("   ⏹ Press [Space] to stop recording")
+            input()  # ждём Enter
             winsound.Beep(1000, 300)
+            emoji = random.choice(emoji_choices)
+            print(f"🎙️ Speak now, darling! I'm all ears and ready to listen~ {emoji}")
 
             chunks = []
             paused = False
@@ -293,7 +354,7 @@ while True:
             keyboard.unhook_all()
             # 🤖 Ассистент-GPT отвечает
             print("🔍 Transcribing your speech...")
-            result = whisper_model.transcribe(filename)
+            result = whisper_model.transcribe(filename, language="en")
             recognized = result["text"].strip()
             print("📄 You said:", recognized)
 
@@ -343,7 +404,7 @@ User said: "{text}"
                 break
 
 
-
+    # ===== Вариант 4: 🤖 Pronunciation Coach (feedback from Lapulka)" =====
     elif choice == "4":
         def gpt_pronunciation_greeting():
             prompt = "Say a friendly and encouraging greeting as an English pronunciation coach. Keep it under 15 words and cheerful."
@@ -376,10 +437,14 @@ User said: "{text}"
 
             keyboard.on_press_key("space", stop_recording)
 
-            print("\n🎙️ 🗣️ Тренер по произношению включен:")
-            print("   ▶️ Нажимай [P], чтобы поставить/снять паузу")
-            print("   ⏹ Нажми [пробел], чтобы завершить запись")
+            print("\n🎙️ Pronunciation Coach is active:")
+            print("   👉 Press [Enter] to start recording")
+            print("   ▶️ Press [P] to pause/resume")
+            print("   ⏹ Press [Space] to stop recording")
+            input()
             winsound.Beep(1000, 300)
+            emoji = random.choice(emoji_choices)
+            print(f"💌 I'm listening~ Say something magical! {emoji}")
 
             chunks = []
             paused = False
@@ -450,16 +515,19 @@ User said: "{text}"
             def gpt_pronunciation_reply(text):
                 prompt = f"""
 
-You are a professional English pronunciation and speaking coach. When the student says something, analyze it and give structured, supportive feedback with the following structure:
+You are a professional English pronunciation and speaking coach with a warm, supportive style. When the student says something, give clear, specific feedback while keeping a kind tone.
 
-1. Provide encouraging and constructive feedback
-2. Emphasize natural spoken English rhythm and tone.
-3. Repeat the sentence with corrected pronunciation, grammar, word choice and intonation after that.
+Your feedback should:
+1. Gently encourage the student
+2. Identify concrete errors in grammar, vocabulary, or pronunciation
+3. Explain why they are incorrect in simple terms
+4. Provide a corrected sentence with natural spoken English rhythm
+
+Avoid overly generic praise like "great job" — instead, be specific and constructive, but kind.
 
 Structure your response like:
-
-💬 Feedback: [Your kind feedback here about pronunciation, word choice, grammar and clarity.]
-🗣️ Corrected Sentence: [Your corrected or improved version here, spoken naturally with correct intonation.]
+💬 Feedback: [Short encouraging phrase + explanation of what to improve and why]
+🗣️ Corrected Sentence: [Improved version]
 
 Student's sentence:
 {text}
@@ -486,20 +554,21 @@ Student's sentence:
                 speak_nova("Okay, see you next time!")
                 break
 
+    # ===== Вариант 5: 📚 Dictionary Mode =====
     elif choice == "5":
-        while True:
+        exit_dict_mode = False
+        while not exit_dict_mode:
             print("\n📚 Dictionary Mode activated! Enter a word or idiom you'd like to learn.")
             user_word = input("🔤 Enter a word or phrase: ").strip()
 
             if not user_word:
-                print("❌ No input received. Returning to main menu.")
-                continue
+                print("😅 Oops, you didn't type anything. Let's try again!")
+                continue  # ← остаёмся внутри режима 5
 
             # Озвучка слова
             speak_nova(user_word)
 
             # 🎀 Украшаем слово эмоджи (для текста)
-            emoji_choices = ["💗", "💫", "🌟", "💕", "🌸", "🎀", "🩷", "✨", "🍬", "🫶", "🧁", "🦋", "🌈", "💖", "🌼", "🌺", "🥰", "🍭", "🐣", "💝"]
             random_emoji = random.choice(emoji_choices)
             decorated_word = f"{random_emoji}{user_word}{random_emoji}"
 
@@ -544,25 +613,24 @@ Include:
             # 💡 Повторная опция после показа информации
             while True:
                 print("\nWhat would you like to do next?")
-                print("[1] 🔁 Repeat the pronunciation")
+                print("[1] 🗣️ Repeat the pronunciation")
                 print("[2] 📚 Enter another word or phrase")
-                print("[3] ❌ Return to main menu")
+                print("[3] 🔙 Return to main menu")
 
                 followup = input("Your choice (1/2/3): ").strip()
 
                 if followup == "1":
-                    speak_nova(user_word)  # Повторяем произношение
+                    speak_nova(user_word)
                 elif followup == "2":
-                    break  # Выйдем из while, начнётся снова режим 5
+                    break  # выйти из внутреннего цикла → ввести новое слово
                 elif followup == "3":
                     print("👋 Returning to main menu!")
-                    continue_outer_loop = True
+                    exit_dict_mode = True  # 💡 установить флаг
                     break
                 else:
                     print("🌀 Hmm, that option doesn’t exist. Try again?")
 
-            if 'break_outer' in locals() and break_outer:
-                del break_outer
+            if exit_dict_mode:
                 break  # Полный выход из режима 5
 
 
@@ -570,18 +638,16 @@ Include:
         print("🌀 Hmm... I think you typed something mysterious! Try again?")
         continue
 
-    # ===== Распознавание и фидбэк =====
-    print("🔍 Transcribing your speech...")
-    result = whisper_model.transcribe(filename)
-    recognized = result["text"]
+    # ===== Распознавание и фидбэк (вне режимов) =====
+    # print("🔍 Transcribing your speech...")
+    # result = whisper_model.transcribe(filename)
+    # recognized = result["text"]
 
+    # def convert_digits_to_words(text):
+    #     return re.sub(r'\b\d+\b', lambda x: num2words(int(x.group())), text)
 
-    def convert_digits_to_words(text):
-        return re.sub(r'\b\d+\b', lambda x: num2words(int(x.group())), text)
-
-
-    recognized_words = convert_digits_to_words(recognized)
-    print("📄 You said:", recognized_words)
+    # recognized_words = convert_digits_to_words(recognized)
+    # print("📄 You said:", recognized_words)
 
     # # 🔁 Спросить: повторить голосом?
     # print("\n🔁 Повторить твою фразу голосом Lapulka?")
@@ -601,10 +667,10 @@ Include:
     # os.system("start lapulka_echo.wav")
 
     # Комментарий Лапушки только для режимов 1 и 4 (не для режима 3)
-    if choice in ["1", "4"]:
-        comment = gpt_feedback(recognized_words)
-        print("💬 Комментарий Лапушки (GPT):", comment)
-        speak_nova(comment)
+    # if choice in ["1", "4"]:
+    #     comment = gpt_feedback(recognized_words)
+    #     print("💬 Комментарий Лапушки (GPT):", comment)
+    #     speak_nova(comment)
 
         # 🔁 Повтор или выход
         print("\nЧто дальше?")
