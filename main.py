@@ -7,7 +7,6 @@ import os
 import subprocess
 import sys
 
-
 # Установка зависимостей, если не установлены
 def install_if_missing(package):
     try:
@@ -36,6 +35,7 @@ try:
     import keyboard
 except ImportError:
     keyboard = None
+
 
 # ===== Загрузка API ключа OpenAI =====
 pygame.mixer.init()
@@ -84,6 +84,32 @@ def speak_nova(text):
 
     except Exception as e:
         print(f"❌ Ошибка озвучки: {e}")
+
+
+
+# Приветствия для режима 3 и 4
+greetings_mode_3 = [
+    "🗣️Lapulka: I'm here to assist you! What do you need help with today?",
+    "🗣️Lapulka: I'm ready to help you with any commands or explanations."
+]
+
+greetings_mode_4 = [
+    "Lapulka: Welcome to the pronunciation feedback session! Let's improve your speaking.",
+    "Lapulka: Ready for some helpful feedback on your pronunciation? Let's get started!"
+]
+
+# Флаг для контроля озвучки приветствий
+speak_greeting = False  # Установи False, чтобы отключить озвучку приветствий
+
+# Функция для выбора случайного приветствия для каждого режима
+def greet_user(mode):
+    if mode == 3:
+        greeting = random.choice(greetings_mode_3)
+    elif mode == 4:
+        greeting = random.choice(greetings_mode_4)
+    print(f"🤖 {greeting}")
+    if speak_greeting:  # Только если флаг активирован, озвучиваем
+        speak_nova(greeting)  # Озвучиваем приветствие
 
 
 # ===== Главный цикл =====
@@ -277,25 +303,7 @@ while True:
 
     # ===== Вариант 3: Lapulka Assistant Mode (commands & explanations) =====
     elif choice == "3":
-        def gpt_pronunciation_greeting():
-            prompt = "Say a kind and cheerful greeting as an English tutor-assistant who is happy to help the student. Keep it under 15 words and cheerful."
-            resp = client.chat.completions.create(
-                model=selected_model,
-                messages=[
-                    {"role": "system", "content": "You are a friendly and supportive English pronunciation coach."},
-                    {"role": "user", "content": prompt}
-                ],
-                max_tokens=60,
-                temperature=0.9
-            )
-            return resp.choices[0].message.content.strip()
-
-
-        # 💬 Получаем и сразу выводим приветствие от Лапульки-коуча
-        greeting = gpt_pronunciation_greeting()
-        print("🤖 Лапулька:", greeting)
-        speak_nova(greeting)
-
+        greet_user(3)  # Приветствие для режима 3
         while True:
             if not keyboard:
              print("⚠️ Модуль keyboard не установлен. Установи его через: pip install keyboard")
@@ -406,24 +414,7 @@ User said: "{text}"
 
     # ===== Вариант 4: 🤖 Pronunciation Coach (feedback from Lapulka)" =====
     elif choice == "4":
-        def gpt_pronunciation_greeting():
-            prompt = "Say a friendly and encouraging greeting as an English pronunciation coach. Keep it under 15 words and cheerful."
-            resp = client.chat.completions.create(
-                model=selected_model,
-                messages=[
-                    {"role": "system", "content": "You are a friendly and supportive English pronunciation coach."},
-                    {"role": "user", "content": prompt}
-                ],
-                max_tokens=60,
-                temperature=0.9
-            )
-            return resp.choices[0].message.content.strip()
-
-
-        # 💬 Получаем и сразу выводим приветствие от Лапульки-коуча
-        greeting = gpt_pronunciation_greeting()
-        print("🤖 Лапулька:", greeting)
-        speak_nova(greeting)
+        greet_user(4)  # Приветствие для режима 4
 
         if not keyboard:
             print("⚠️ Модуль keyboard не установлен. Установи его через: pip install keyboard")
@@ -572,6 +563,9 @@ Student's sentence:
             random_emoji = random.choice(emoji_choices)
             decorated_word = f"{random_emoji}{user_word}{random_emoji}"
 
+            # Сообщение о подготовке ответа
+            print("\n🔄 Preparing your answer...💖")
+
             # GPT-запрос
             def gpt_dictionary_explanation(word):
                 prompt = f"""
@@ -597,7 +591,7 @@ Include:
                         {"role": "system", "content": "You are a friendly dictionary expert and English tutor."},
                         {"role": "user", "content": prompt}
                     ],
-                    max_tokens=600,
+                    max_tokens=400,
                     temperature=0.7
                 )
                 return response.choices[0].message.content.strip()
