@@ -129,7 +129,7 @@ You are an English tutor and assistant. Please respond based on the following:
 2. If the student asks for something creative like a story, respond with a short, relevant story that fits their request. Be creative and include appropriate grammar and vocabulary.
 3. If the student asks to check their homework or assignment, evaluate the work, give feedback on mistakes, and provide suggestions for improvement.
 4. If the student asks about the usage of a word or phrase, explain whether it is correct and why it is used this way or not.
-
+- Use British English spelling and grammar.
 Please ensure your responses are clear, professional, and polite. Make sure to adapt to the student's request.
 
 Student's text:   
@@ -584,11 +584,12 @@ Include:
 6. Synonyms or similar expressions.
 7. 2–3 real-life usage examples.
 8. Usage tips specific to this word: mention how this word is used (formal/informal), its frequency of use. Russian translation of this word. Include common mistakes people make with using this word. Keep this section brief and precise. Avoid long explanations.
+- Use British English spelling and grammar.
 """
                 response = client.chat.completions.create(
                     model=selected_model,
                     messages=[
-                        {"role": "system", "content": "You are a friendly dictionary expert and English tutor."},
+                        {"role": "system", "content": "You are a friendly dictionary expert and English tutor, using British English."},
                         {"role": "user", "content": prompt}
                     ],
                     max_tokens=400,
