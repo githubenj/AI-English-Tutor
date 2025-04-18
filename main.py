@@ -584,6 +584,7 @@ If any meaning is the most common or most frequently used, please mark it clearl
 6. Synonyms or similar expressions.
 7. 2–3 real-life usage examples.
 8. Usage tips specific to this word: mention how this word is used (formal/informal), its frequency of use. Russian translation of this word. Include common mistakes people make with using this word. Keep this section brief and precise. Avoid long explanations.
+9. If possible, provide the common CEFR level for this word (e.g., C1, C2, B1, etc.). If it's not available, just omit it.
 - Use British English spelling and grammar, and if the word has multiple meanings, include all meanings. If any meaning is old-fashioned, please mark it as such. If any meaning is the most common, mark it as [most common].
 """
                 response = client.chat.completions.create(
@@ -592,7 +593,7 @@ If any meaning is the most common or most frequently used, please mark it clearl
                         {"role": "system", "content": "You are a friendly dictionary expert and English tutor, using British English."},
                         {"role": "user", "content": prompt}
                     ],
-                    max_tokens=400,
+                    max_tokens=500,
                     temperature=0.7
                 )
                 return response.choices[0].message.content.strip()
@@ -605,28 +606,28 @@ If any meaning is the most common or most frequently used, please mark it clearl
             # 🎤 Озвучиваем только слово
             speak_nova(user_word)
 
-            # 💡 Повторная опция после показа информации (пока выключила)
-            # while True:
-                # print("\nWhat would you like to do next?")
-                # print("[1] 🗣️ Repeat the pronunciation")
-                # print("[2] 📚 Enter another word or phrase")
-                # print("[3] 🔙 Return to main menu")
+            # 💡 Повторная опция после показа информации (можно закомментить)
+            while True:
+                print("\nWhat would you like to do next?")
+                print("[1] 🗣️ Repeat the pronunciation")
+                print("[2] 📚 Enter another word or phrase")
+                print("[3] 🔙 Return to main menu")
 
-                # followup = input("Your choice (1/2/3): ").strip()
+                followup = input("Your choice (1/2/3): ").strip()
 
-                # if followup == "1":
-                    # speak_nova(user_word)
-                # elif followup == "2":
-                    # break  # выйти из внутреннего цикла → ввести новое слово
-                # elif followup == "3":
-                    # print("👋 Returning to main menu!")
-                    # exit_dict_mode = True  # 💡 установить флаг
-                    # break
-                # else:
-                    # print("🌀 Hmm, that option doesn’t exist. Try again?")
+                if followup == "1":
+                    speak_nova(user_word)
+                elif followup == "2":
+                    break  # выйти из внутреннего цикла → ввести новое слово
+                elif followup == "3":
+                    print("👋 Returning to main menu!")
+                    exit_dict_mode = True  # 💡 установить флаг
+                    break
+                else:
+                    print("🌀 Hmm, that option doesn’t exist. Try again?")
 
-            # if exit_dict_mode:
-                # break  # Полный выход из режима 5
+            if exit_dict_mode:
+                break  # Полный выход из режима 5
 
 
     else:
