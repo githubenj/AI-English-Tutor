@@ -576,15 +576,15 @@ Provide a detailed and structured explanation as follows:
 Include:
 1. British and American pronunciation in IPA.
 2. Part of speech and if it's formal/informal.
-3. Meaning(s) in clear English.
-4. Notes like: transitive/intransitive (for verbs), countable/uncountable (for nouns). Comparative and Superlative (if adjective):  
-- Comparative: [e.g. friendlier / more friendly]  
-- Superlative: [e.g. friendliest / most friendly] 
+3. All possible meanings of the word or phrase (if there are multiple meanings).
+If any meanings are old-fashioned or outdated, please indicate them clearly (e.g. [old-fashioned] or [outdated]).
+If any meaning is the most common or most frequently used, please mark it clearly as [most common].
+4. Notes like: transitive/intransitive (for verbs), countable/uncountable (for nouns). Comparative and Superlative forms (if adjective has them, but if not, please specify that degrees of comparison are not applicable for this adjective).
 5. Typical prepositions or collocations.
 6. Synonyms or similar expressions.
 7. 2–3 real-life usage examples.
 8. Usage tips specific to this word: mention how this word is used (formal/informal), its frequency of use. Russian translation of this word. Include common mistakes people make with using this word. Keep this section brief and precise. Avoid long explanations.
-- Use British English spelling and grammar.
+- Use British English spelling and grammar, and if the word has multiple meanings, include all meanings. If any meaning is old-fashioned, please mark it as such. If any meaning is the most common, mark it as [most common].
 """
                 response = client.chat.completions.create(
                     model=selected_model,
@@ -605,28 +605,28 @@ Include:
             # 🎤 Озвучиваем только слово
             speak_nova(user_word)
 
-            # 💡 Повторная опция после показа информации
-            while True:
-                print("\nWhat would you like to do next?")
-                print("[1] 🗣️ Repeat the pronunciation")
-                print("[2] 📚 Enter another word or phrase")
-                print("[3] 🔙 Return to main menu")
+            # 💡 Повторная опция после показа информации (пока выключила)
+            # while True:
+                # print("\nWhat would you like to do next?")
+                # print("[1] 🗣️ Repeat the pronunciation")
+                # print("[2] 📚 Enter another word or phrase")
+                # print("[3] 🔙 Return to main menu")
 
-                followup = input("Your choice (1/2/3): ").strip()
+                # followup = input("Your choice (1/2/3): ").strip()
 
-                if followup == "1":
-                    speak_nova(user_word)
-                elif followup == "2":
-                    break  # выйти из внутреннего цикла → ввести новое слово
-                elif followup == "3":
-                    print("👋 Returning to main menu!")
-                    exit_dict_mode = True  # 💡 установить флаг
-                    break
-                else:
-                    print("🌀 Hmm, that option doesn’t exist. Try again?")
+                # if followup == "1":
+                    # speak_nova(user_word)
+                # elif followup == "2":
+                    # break  # выйти из внутреннего цикла → ввести новое слово
+                # elif followup == "3":
+                    # print("👋 Returning to main menu!")
+                    # exit_dict_mode = True  # 💡 установить флаг
+                    # break
+                # else:
+                    # print("🌀 Hmm, that option doesn’t exist. Try again?")
 
-            if exit_dict_mode:
-                break  # Полный выход из режима 5
+            # if exit_dict_mode:
+                # break  # Полный выход из режима 5
 
 
     else:
