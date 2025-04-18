@@ -606,28 +606,28 @@ If any meaning is the most common or most frequently used, please mark it clearl
             # 🎤 Озвучиваем только слово
             speak_nova(user_word)
 
-            # 💡 Повторная опция после показа информации (можно закомментить)
-            while True:
-                print("\nWhat would you like to do next?")
-                print("[1] 🗣️ Repeat the pronunciation")
-                print("[2] 📚 Enter another word or phrase")
-                print("[3] 🔙 Return to main menu")
-
-                followup = input("Your choice (1/2/3): ").strip()
-
-                if followup == "1":
-                    speak_nova(user_word)
-                elif followup == "2":
-                    break  # выйти из внутреннего цикла → ввести новое слово
-                elif followup == "3":
-                    print("👋 Returning to main menu!")
-                    exit_dict_mode = True  # 💡 установить флаг
-                    break
-                else:
-                    print("🌀 Hmm, that option doesn’t exist. Try again?")
-
-            if exit_dict_mode:
-                break  # Полный выход из режима 5
+            # # 💡 Повторная опция после показа информации (пока закомментила)
+            # while True:
+            #     print("\nWhat would you like to do next?")
+            #     print("[1] 🗣️ Repeat the pronunciation")
+            #     print("[2] 📚 Enter another word or phrase")
+            #     print("[3] 🔙 Return to main menu")
+            #
+            #     followup = input("Your choice (1/2/3): ").strip()
+            #
+            #     if followup == "1":
+            #         speak_nova(user_word)
+            #     elif followup == "2":
+            #         break  # выйти из внутреннего цикла → ввести новое слово
+            #     elif followup == "3":
+            #         print("👋 Returning to main menu!")
+            #         exit_dict_mode = True  # 💡 установить флаг
+            #         break
+            #     else:
+            #         print("🌀 Hmm, that option doesn’t exist. Try again?")
+            #
+            # if exit_dict_mode:
+            #     break  # Полный выход из режима 5
 
 
     else:
